@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Conway's Game of Life Simulator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(25, 20px);
+      grid-template-rows: repeat(25, 20px);
+      gap: 1px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 20px;
+      height: 20px;
+      background-color: #202634;
+      border-radius: 3px;
+      transition: background-color 0.15s;
+      cursor: pointer;
+    }
+    .cell.alive {
+      background-color: #00bcd4;
+    }
+    body {
+      background-color: #0b1321;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container text-center py-5">
+    <h1 class="mb-4 fw-bold" >Conway's Game of Life Simulator</h1>
+    <div id="grid"></div>
+
+    <div class="mt-4 d-flex justify-content-center gap-3">
+      <button id="startBtn" class="btn btn-success">Start</button>
+      <button id="nextBtn" class="btn btn-primary">Next</button>
+      <button id="clearBtn" class="btn btn-danger">Clear</button>
+    </div>
+  </div>
+
+  <footer class="footer py-2" style="width: 100%;">
+    <div class="text-center text-white">
+      Made by <a href="https://reesefairchild.github.io" class="text-white text-decoration-none">Reese Fairchild</a> | 
+      Powered by <a href="https://getbootstrap.com" class="text-white text-decoration-none">Bootstrap</a> |
+      Read about <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life" class="text-white">Conway's Game of Life</a>
+    </div>
+  </footer>
+
+    <script>
+    const gridEl = document.getElementById("grid");
+    const rows = 25, cols = 25;
+    let grid = Array.from({ length: rows }, () => Array(cols).fill(0));
+    let running = false;
+    let intervalId;
+
+    // Build grid
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+        //Toggle dead/alive listener
+        cell.addEventListener("click", () => {
+          grid[r][c] = grid[r][c] ? 0 : 1;
+          cell.classList.toggle("alive");
+        });
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function renderGrid() {
+      document.querySelectorAll(".cell").forEach(cell => {
+        const r = cell.dataset.row, c = cell.dataset.col;
+        cell.classList.toggle("alive", grid[r][c] === 1);
+      });
+    }
+
+    // Conway's Game of Life next gen
+    function nextGeneration() {
+      const next = grid.map(arr => [...arr]);
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let liveNeighbors = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              const nr = r + dr, nc = c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                liveNeighbors += grid[nr][nc];
+              }
+            }
+          }
+          if (grid[r][c] === 1) {
+            // Live cell dies unless 2 or 3 neighbors
+            if (liveNeighbors < 2 || liveNeighbors > 3) next[r][c] = 0;
+          } else {
+            // Dead cell becomes alive with exactly 3 neighbors
+            if (liveNeighbors === 3) next[r][c] = 1;
+          }
+        }
+      }
+      grid = next;
+      renderGrid();
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", nextGeneration);
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      grid = Array.from({ length: rows }, () => Array(cols).fill(0));
+      renderGrid();
+    });
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (!running) {
+        running = true;
+        document.getElementById("startBtn").textContent = "Stop";
+        intervalId = setInterval(nextGeneration, 200);
+      } else {
+        running = false;
+        document.getElementById("startBtn").textContent = "Start";
+        clearInterval(intervalId);
+      }
+    });
+  </script>
+</body>
+</html>
