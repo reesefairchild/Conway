@@ -113,6 +113,9 @@
     document.getElementById("clearBtn").addEventListener("click", () => {
       grid = Array.from({ length: rows }, () => Array(cols).fill(0));
       renderGrid();
+        running = false;
+        document.getElementById("startBtn").textContent = "Start";
+        clearInterval(intervalId);
     });
 
     document.getElementById("startBtn").addEventListener("click", () => {
